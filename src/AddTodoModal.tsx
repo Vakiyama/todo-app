@@ -37,6 +37,14 @@ export default function AddTodoModal({
       });
       return;
     }
+
+    if (descriptionInput === '') {
+      Toast.show({
+        type: 'error',
+        text1: 'Description cannot be empty!',
+      });
+      return;
+    }
     const selectedCategoryIndex = categories.findIndex(
       (category: Category) => category.id === selectedCategoryId
     );
