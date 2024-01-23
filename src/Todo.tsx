@@ -2,14 +2,17 @@ import React from 'react';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 import { View, StyleSheet, Pressable, Text } from 'react-native';
 import { frappe } from './catppuccin';
+import { type Category } from './ManageCategoriesModal';
 
 export type TodoItem = {
   id: string;
   title: string;
   isChecked: boolean;
+  category: Category;
 };
 
 type TodoProps = {
+  color: keyof typeof frappe;
   toggleChecked: (id: string) => void;
   removeTodo: (id: string) => void;
 } & TodoItem;
@@ -18,6 +21,7 @@ export default function Todo({
   id,
   title,
   isChecked,
+  color,
   toggleChecked,
   removeTodo,
 }: TodoProps) {
@@ -26,10 +30,10 @@ export default function Todo({
       <BouncyCheckbox
         style={styles.checkbox}
         size={25}
-        fillColor={frappe.red}
+        fillColor={frappe[color]}
         unfillColor={frappe.base}
         text={title}
-        iconStyle={{ borderColor: frappe.red }}
+        iconStyle={{ borderColor: frappe[color] }}
         innerIconStyle={{ borderWidth: 1 }}
         onPress={() => toggleChecked(id)}
         isChecked={isChecked}

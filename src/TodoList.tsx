@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
-  Button,
   FlatList,
+  ListRenderItem,
   Modal,
   Pressable,
   StyleSheet,
@@ -13,30 +13,17 @@ import { v4 as uuid } from 'uuid';
 import Todo, { type TodoItem } from './Todo';
 import { frappe } from './catppuccin';
 import AddTodoModal from './AddTodoModal';
-
-function generateTodo(index: number): TodoItem {
-  return {
-    id: uuid(),
-    title: `example ${index}`,
-    isChecked: false,
-  };
-}
-
-const exampleTodos: TodoItem[] = [
-  generateTodo(1),
-  generateTodo(2),
-  generateTodo(3),
-];
-
-const exampleTodosLong: TodoItem[] = [];
-for (let i = 0; i < 100; i++) {
-  exampleTodosLong.push(generateTodo(i));
-}
+import ManageCategoriesModal, { type Category } from './ManageCategoriesModal';
+import Toast from 'react-native-toast-message';
+import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 
 export default function TodoList() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [addTodoModalVisible, setAddTodoModalVisible] =
     useState<boolean>(false);
+  const [manageCategoriesModalVisible, setManageCategoriesModalVisible] =
+    useState<boolean>(false);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   function updateTodo(id: string) {
     const todoIndex = todos.findIndex((item) => item.id === id);
@@ -46,11 +33,12 @@ export default function TodoList() {
     setTodos(newTodos);
   }
 
-  function createTodo(title: string) {
+  function createTodo(title: string, category: Category) {
     const todo: TodoItem = {
       id: uuid(),
       title,
       isChecked: false,
+      category,
     };
     setTodos([...todos, todo]);
     setAddTodoModalVisible(false);
@@ -64,39 +52,112 @@ export default function TodoList() {
     setTodos(newTodos);
   }
 
+  function addCategory(category: Category) {
+    setCategories([...categories, category]);
+  }
+
+  function removeCategory(id: string) {
+    const categoryIndex = categories.findIndex(
+      (category: Category) => category.id === id
+    );
+    const newCategories = [...categories];
+    newCategories.splice(categoryIndex, 1);
+    setCategories(newCategories);
+  }
+
+  let currentCategoryId: string | undefined;
+
+  function renderTodo({ item }: { item: TodoItem }) {
+    let firstCategory = false;
+    if (currentCategoryId === undefined) {
+      currentCategoryId = item.category.id;
+      firstCategory = true;
+    }
+    return (
+      <>
+        {currentCategoryId !== item.category.id || firstCategory ? (
+          <Text
+            style={[
+              styles.categorySeparatorText,
+              firstCategory ? styles.firstCategory : null,
+            ]}
+          >
+            {item.category.name}
+          </Text>
+        ) : null}
+        <Todo
+          id={item.id}
+          toggleChecked={updateTodo}
+          isChecked={item.isChecked}
+          title={item.title}
+          removeTodo={removeTodo}
+          category={item.category}
+          color={item.category.color}
+        />
+      </>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Modal
         animationType="slide"
         transparent={false}
         visible={addTodoModalVisible}
+        onRequestClose={() => setAddTodoModalVisible(false)}
       >
-        <AddTodoModal addTodo={createTodo} />
+        <AddTodoModal
+          addTodo={createTodo}
+          closeModal={() => setAddTodoModalVisible(false)}
+          categories={categories}
+        />
+        <Toast />
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={manageCategoriesModalVisible}
+        onRequestClose={() => setManageCategoriesModalVisible(false)}
+      >
+        <ManageCategoriesModal
+          closeModal={() => setManageCategoriesModalVisible(false)}
+          categories={categories}
+          addCategory={addCategory}
+          removeCategory={removeCategory}
+        />
+        <Toast />
       </Modal>
       <View style={styles.header}>
         <Text style={styles.text}>Hello Vitor.</Text>
-        <Pressable
-          style={styles.addTodoButton}
-          onPressOut={() => {
-            setAddTodoModalVisible(true);
-          }}
-        >
-          <Text style={styles.todoButtonText}>+</Text>
-        </Pressable>
+        <View style={styles.buttonGroup}>
+          <Pressable
+            style={[styles.button, styles.addTagButton]}
+            onPressOut={() => {
+              setManageCategoriesModalVisible(true);
+            }}
+          >
+            <AntDesign name="tago" size={20} color="black" />
+          </Pressable>
+          <Pressable
+            style={styles.button}
+            onPressOut={() => {
+              setAddTodoModalVisible(true);
+            }}
+          >
+            <MaterialIcons
+              style={styles.icon}
+              name="playlist-add"
+              size={20}
+              color={frappe.base}
+            />
+          </Pressable>
+        </View>
       </View>
       <FlatList
         style={styles.list}
         data={todos}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Todo
-            id={item.id}
-            toggleChecked={updateTodo}
-            isChecked={item.isChecked}
-            title={item.title}
-            removeTodo={removeTodo}
-          />
-        )}
+        renderItem={renderTodo}
       />
     </View>
   );
@@ -128,17 +189,37 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  addTodoButton: {
+  button: {
     backgroundColor: frappe.maroon,
     width: 40,
     height: 40,
-    borderRadius: 50,
+    borderRadius: 10,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  addTagButton: {
+    marginRight: 8,
+  },
   todoButtonText: {
     fontSize: 30,
     color: frappe.surface0,
+  },
+  icon: {
+    paddingLeft: 3,
+    paddingTop: 1,
+  },
+  buttonGroup: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  categorySeparatorText: {
+    color: frappe.text,
+    fontSize: 20,
+    marginTop: 30,
+    marginBottom: 8,
+  },
+  firstCategory: {
+    marginTop: 0,
   },
 });

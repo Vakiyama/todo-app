@@ -1,8 +1,6 @@
 {
   description = "Example description";
-
   inputs.android2nix.url = "github:Mazurel/android2nix";
-
   outputs = { self, android2nix }:
     android2nix.lib.mkAndroid2nixEnv (
       { gradle_6, jdk11, ... }: {

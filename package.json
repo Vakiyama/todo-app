@@ -17,7 +17,10 @@
     "react": "18.2.0",
     "react-native": "0.73.2",
     "react-native-bouncy-checkbox": "^3.0.7",
+    "react-native-dropdown-select-list": "^2.0.5",
     "react-native-get-random-values": "1.8.0",
+    "react-native-system-navigation-bar": "^2.6.3",
+    "react-native-toast-message": "^2.2.0",
     "typescript": "^5.3.0",
     "uuid": "^9.0.1"
   },
