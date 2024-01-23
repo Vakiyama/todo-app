@@ -29,7 +29,6 @@ export default function AddTodoModal({
     return { key: index.toString(), value: category.name };
   });
 
-
   const handleTodo = () => {
     if (!selectedCategoryId) {
       Toast.show({
@@ -42,6 +41,7 @@ export default function AddTodoModal({
       (category: Category) => category.id === selectedCategoryId
     );
     addTodo(descriptionInput, categories[selectedCategoryIndex]);
+    setDescriptionInput('');
   };
 
   return (

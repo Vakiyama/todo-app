@@ -41,7 +41,6 @@ export default function TodoList() {
       category,
     };
     setTodos([...todos, todo]);
-    setAddTodoModalVisible(false);
   }
 
   function removeTodo(id: string) {
@@ -73,7 +72,7 @@ export default function TodoList() {
       currentCategoryId = item.category.id;
       firstCategory = true;
     }
-    return (
+    const components = (
       <>
         {currentCategoryId !== item.category.id || firstCategory ? (
           <Text
@@ -96,6 +95,35 @@ export default function TodoList() {
         />
       </>
     );
+
+    if (currentCategoryId !== item.category.id) {
+      currentCategoryId = item.category.id;
+    }
+    return components;
+  }
+
+  type TodoItemsGroupingByCategory = { [name: string]: TodoItem[] };
+
+  function groupTodos(todos: TodoItem[]): TodoItem[] {
+    const groups: TodoItemsGroupingByCategory = {};
+    const grouped = todos.reduce((acc, todo) => {
+      const title = todo.category.name;
+      if (Object.keys(acc).includes(title)) {
+        acc[title].push(todo);
+      } else {
+        acc[title] = [todo];
+      }
+      return acc;
+    }, groups);
+
+    const newTodos: TodoItem[] = [];
+    for (const key in grouped) {
+      for (const todo of grouped[key]) {
+        newTodos.push(todo);
+      }
+    }
+
+    return newTodos;
   }
 
   return (
@@ -155,7 +183,7 @@ export default function TodoList() {
       </View>
       <FlatList
         style={styles.list}
-        data={todos}
+        data={groupTodos(todos)}
         keyExtractor={(item) => item.id}
         renderItem={renderTodo}
       />
