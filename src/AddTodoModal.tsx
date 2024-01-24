@@ -18,16 +18,18 @@ export default function AddTodoModal({
   closeModal,
   categories,
 }: {
-  addTodo: (description: string, category: Category) => void;
+  addTodo: (description: string, category: Category, cost: number) => void;
   closeModal: () => void;
   categories: Category[];
 }) {
   const [descriptionInput, setDescriptionInput] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | void>();
+  const [costInput, setCostInput] = useState('');
 
-  const categoriesFormatted = categories.map((category, index) => {
-    return { key: index.toString(), value: category.name };
-  });
+  const categoriesFormatted = categories.map((category, index) => ({
+    key: index.toString(),
+    value: category.name,
+  }));
 
   const handleTodo = () => {
     if (!selectedCategoryId) {
@@ -45,10 +47,23 @@ export default function AddTodoModal({
       });
       return;
     }
+
+    if (costInput === undefined || parseInt(costInput) < 0) {
+      Toast.show({
+        type: 'error',
+        text1: 'Cost must be a positive integer!',
+      });
+      return;
+    }
+
     const selectedCategoryIndex = categories.findIndex(
       (category: Category) => category.id === selectedCategoryId
     );
-    addTodo(descriptionInput, categories[selectedCategoryIndex]);
+    addTodo(
+      descriptionInput,
+      categories[selectedCategoryIndex],
+      parseInt(costInput)
+    );
     setDescriptionInput('');
   };
 
@@ -64,6 +79,13 @@ export default function AddTodoModal({
           value={descriptionInput}
           onChangeText={setDescriptionInput}
           style={styles.input}
+          cursorColor={frappe.crust}
+        />
+        <TextInput
+          placeholder="Add a cost..."
+          value={costInput}
+          onChangeText={setCostInput}
+          style={[styles.input, styles.costInput]}
           cursorColor={frappe.crust}
         />
         <SelectList
@@ -113,6 +135,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
     maxWidth: 300,
+  },
+  costInput: {
+    backgroundColor: frappe.subtext0,
   },
   addTodoButton: {
     width: '30%',

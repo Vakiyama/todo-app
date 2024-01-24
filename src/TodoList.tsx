@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FlatList,
-  ListRenderItem,
   Modal,
   Pressable,
   StyleSheet,
@@ -16,6 +15,10 @@ import AddTodoModal from './AddTodoModal';
 import ManageCategoriesModal, { type Category } from './ManageCategoriesModal';
 import Toast from 'react-native-toast-message';
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+function loadFromStorage() {
+}
 
 export default function TodoList() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
@@ -25,6 +28,8 @@ export default function TodoList() {
     useState<boolean>(false);
   const [categories, setCategories] = useState<Category[]>([]);
 
+  useEffect(loadFromStorage, []);
+
   function updateTodo(id: string) {
     const todoIndex = todos.findIndex((item) => item.id === id);
     if (todoIndex === -1) return;
@@ -33,12 +38,17 @@ export default function TodoList() {
     setTodos(newTodos);
   }
 
-  function createTodo(title: string, category: Category) {
+  function createTodo(title: string, category: Category, cost: number) {
+    if (cost < 0) {
+      throw new Error(`Cost should be a positive integer, received ${cost}`);
+    }
+
     const todo: TodoItem = {
       id: uuid(),
       title,
       isChecked: false,
       category,
+      cost,
     };
     setTodos([...todos, todo]);
   }
@@ -61,6 +71,8 @@ export default function TodoList() {
     );
     const newCategories = [...categories];
     newCategories.splice(categoryIndex, 1);
+    const newTodos = todos.filter((todo) => todo.category.id === id);
+    setTodos(newTodos);
     setCategories(newCategories);
   }
 
@@ -92,6 +104,7 @@ export default function TodoList() {
           removeTodo={removeTodo}
           category={item.category}
           color={item.category.color}
+          cost={item.cost}
         />
       </>
     );
@@ -164,7 +177,7 @@ export default function TodoList() {
               setManageCategoriesModalVisible(true);
             }}
           >
-            <AntDesign name="tago" size={20} color="black" />
+            <AntDesign name="tago" size={20} color={frappe.base} />
           </Pressable>
           <Pressable
             style={styles.button}

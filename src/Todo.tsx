@@ -9,6 +9,7 @@ export type TodoItem = {
   title: string;
   isChecked: boolean;
   category: Category;
+  cost: number;
 };
 
 type TodoProps = {
@@ -22,6 +23,7 @@ export default function Todo({
   title,
   isChecked,
   color,
+  cost,
   toggleChecked,
   removeTodo,
 }: TodoProps) {
@@ -39,9 +41,19 @@ export default function Todo({
         isChecked={isChecked}
         textStyle={{ color: frappe.text }}
       />
-      <Pressable style={styles.removeButton} onPressOut={() => removeTodo(id)}>
-        <Text style={styles.removeText}>-</Text>
-      </Pressable>
+      <View style={styles.rightWrapper}>
+        <View style={styles.costWrapper}>
+          <Text style={[styles.costText, { color: frappe[color] }]}>
+            {cost !== 0 ? cost : null}
+          </Text>
+        </View>
+        <Pressable
+          style={styles.removeButton}
+          onPressOut={() => removeTodo(id)}
+        >
+          <Text style={styles.removeText}>-</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -54,6 +66,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   checkbox: {
     marginTop: separatorSize,
@@ -65,5 +78,22 @@ const styles = StyleSheet.create({
   removeText: {
     fontSize: 30,
     color: frappe.text,
+    position: 'relative',
+    bottom: 1,
+    transform: [{ scaleX: 1.4 }],
+  },
+  rightWrapper: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  costWrapper: {
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  costText: {
+    fontSize: 20,
+    color: frappe.base,
   },
 });

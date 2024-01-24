@@ -96,9 +96,22 @@ export default function ManageCategoriesModal({
           searchPlaceholder="Select a color..."
         />
         <FlatList
+          style={styles.categoryList}
           data={categories}
           keyExtractor={(category) => category.id}
-          renderItem={({ item }) => <Text>{item.name}</Text>}
+          renderItem={({ item }) => (
+            <View
+              style={[
+                styles.categoryWrapper,
+                { backgroundColor: frappe[item.color] },
+              ]}
+            >
+              <Text style={styles.categoryText}>{item.name}</Text>
+              <Pressable style={styles.removeCategory} onPressOut={() => removeCategory(item.id)}>
+                <AntDesign name="close" size={16} color={frappe.surface0} />
+              </Pressable>
+            </View>
+          )}
         />
         <Pressable
           style={styles.addCategoryButton}
@@ -167,10 +180,39 @@ const styles = StyleSheet.create({
     minWidth: 200,
     marginTop: 30,
     borderWidth: 0,
+    marginBottom: 10,
   },
   dropdownStyles: {
     backgroundColor: frappe.flamingo,
     color: frappe.text,
     borderWidth: 0,
   },
+  categoryWrapper: {
+    borderRadius: 10,
+    backgroundColor: frappe.subtext0,
+    paddingVertical: 10,
+    marginVertical: 5,
+    minWidth: 160,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryList: {
+    marginBottom: 10,
+  },
+  categoryText: {
+    color: frappe.base,
+  },
+  removeCategory: {
+    position: 'absolute',
+    paddingHorizontal: 8,
+    right: 10,
+  },
 });
+/*
+ *
+              <Pressable style={styles.removeCategory}>
+                <Text style={styles.removeCategoryButtonIcon}>-</Text>
+ *
+ * */
