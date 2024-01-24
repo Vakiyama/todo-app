@@ -107,7 +107,10 @@ export default function ManageCategoriesModal({
               ]}
             >
               <Text style={styles.categoryText}>{item.name}</Text>
-              <Pressable style={styles.removeCategory} onPressOut={() => removeCategory(item.id)}>
+              <Pressable
+                style={styles.removeCategory}
+                onPressOut={() => removeCategory(item.id)}
+              >
                 <AntDesign name="close" size={16} color={frappe.surface0} />
               </Pressable>
             </View>

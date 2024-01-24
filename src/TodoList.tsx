@@ -17,18 +17,42 @@ import Toast from 'react-native-toast-message';
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-function loadFromStorage() {
+async function saveToStorage(todos: TodoItem[], categories: Category[]) {
+  await AsyncStorage.setItem('todos', JSON.stringify(todos));
+  await AsyncStorage.setItem('categories', JSON.stringify(categories));
+}
+
+async function loadFromStorage(): Promise<
+  [todos: TodoItem[], categories: Category[]]
+> {
+  const todosStringified = await AsyncStorage.getItem('todos');
+  const todos = todosStringified !== null ? JSON.parse(todosStringified) : [];
+  const categoriesStringified = await AsyncStorage.getItem('categories');
+  const categories =
+    categoriesStringified !== null ? JSON.parse(categoriesStringified) : [];
+  return [todos, categories];
 }
 
 export default function TodoList() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [addTodoModalVisible, setAddTodoModalVisible] =
     useState<boolean>(false);
   const [manageCategoriesModalVisible, setManageCategoriesModalVisible] =
     useState<boolean>(false);
-  const [categories, setCategories] = useState<Category[]>([]);
 
-  useEffect(loadFromStorage, []);
+  useEffect(() => {
+    loadFromStorage().then((loaded) => {
+      const [loadedTodos, loadedCategories] = loaded;
+      setTodos(loadedTodos);
+      console.log(loadedCategories);
+      setCategories(loadedCategories);
+    });
+  }, []);
+
+  useEffect(() => {
+    saveToStorage(todos, categories);
+  }, [todos, categories]);
 
   function updateTodo(id: string) {
     const todoIndex = todos.findIndex((item) => item.id === id);
@@ -79,18 +103,28 @@ export default function TodoList() {
   let currentCategoryId: string | undefined;
 
   function renderTodo({ item }: { item: TodoItem }) {
-    let firstCategory = false;
-    if (currentCategoryId === undefined) {
-      currentCategoryId = item.category.id;
-      firstCategory = true;
+    const currentIndex = categories.findIndex(
+      (category) => item.category.id === category.id
+    );
+
+    let firstItemOfCategory = false;
+
+    if (currentIndex === 0) {
+      firstItemOfCategory = true;
+    } else if (
+      currentIndex !== -1 &&
+      categories[currentIndex - 1].id !== item.category.id
+    ) {
+      firstItemOfCategory = true;
     }
+
     const components = (
       <>
-        {currentCategoryId !== item.category.id || firstCategory ? (
+        {currentCategoryId !== item.category.id || firstItemOfCategory ? (
           <Text
             style={[
               styles.categorySeparatorText,
-              firstCategory ? styles.firstCategory : null,
+              firstItemOfCategory ? styles.firstCategory : null,
             ]}
           >
             {item.category.name}
