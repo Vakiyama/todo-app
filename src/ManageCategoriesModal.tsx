@@ -1,4 +1,5 @@
 import {
+  Modal,
   KeyboardAvoidingView,
   Pressable,
   Text,
@@ -21,15 +22,17 @@ export type Category = {
 };
 
 export default function ManageCategoriesModal({
-  closeModal,
   categories,
   addCategory,
   removeCategory,
+  visible,
+  setVisible,
 }: {
-  closeModal: () => void;
   categories: Category[];
+  visible: boolean;
   addCategory: (category: Category) => void;
   removeCategory: (id: string) => void;
+  setVisible: (visible: boolean) => void;
 }) {
   const [categoryInput, setCategoryInput] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<
@@ -71,59 +74,70 @@ export default function ManageCategoriesModal({
   });
 
   return (
-    <KeyboardAvoidingView style={styles.container}>
-      <Pressable style={styles.closeButton} onPressOut={closeModal}>
-        <AntDesign name="back" size={18} color={frappe.base} />
-      </Pressable>
-      <View style={styles.wrapper}>
-        <Text style={styles.title}>Manage Categories</Text>
-        <TextInput
-          placeholder="Add a title..."
-          value={categoryInput}
-          onChangeText={setCategoryInput}
-          style={styles.input}
-          cursorColor={frappe.crust}
-        />
-        <SelectList
-          setSelected={(color: keyof typeof frappe) => {
-            setSelectedColor(color);
-          }}
-          data={colorsFormatted}
-          maxHeight={160}
-          save="value"
-          boxStyles={styles.categoryBox}
-          dropdownStyles={styles.dropdownStyles}
-          searchPlaceholder="Select a color..."
-        />
-        <FlatList
-          style={styles.categoryList}
-          data={categories}
-          keyExtractor={(category) => category.id}
-          renderItem={({ item }) => (
-            <View
-              style={[
-                styles.categoryWrapper,
-                { backgroundColor: frappe[item.color] },
-              ]}
-            >
-              <Text style={styles.categoryText}>{item.name}</Text>
-              <Pressable
-                style={styles.removeCategory}
-                onPressOut={() => removeCategory(item.id)}
-              >
-                <AntDesign name="close" size={16} color={frappe.surface0} />
-              </Pressable>
-            </View>
-          )}
-        />
+    <Modal
+      animationType="slide"
+      transparent={false}
+      visible={visible}
+      onRequestClose={() => setVisible(false)}
+    >
+      <KeyboardAvoidingView style={styles.container}>
         <Pressable
-          style={styles.addCategoryButton}
-          onPressOut={() => handleAddCategory(categoryInput)}
+          style={styles.closeButton}
+          onPressOut={() => setVisible(false)}
         >
-          <Text style={styles.addCategoryButtonText}>Add category</Text>
+          <AntDesign name="back" size={18} color={frappe.base} />
         </Pressable>
-      </View>
-    </KeyboardAvoidingView>
+        <View style={styles.wrapper}>
+          <Text style={styles.title}>Manage Categories</Text>
+          <TextInput
+            placeholder="Add a title..."
+            value={categoryInput}
+            onChangeText={setCategoryInput}
+            style={styles.input}
+            cursorColor={frappe.crust}
+          />
+          <SelectList
+            setSelected={(color: keyof typeof frappe) => {
+              setSelectedColor(color);
+            }}
+            data={colorsFormatted}
+            maxHeight={160}
+            save="value"
+            boxStyles={styles.categoryBox}
+            dropdownStyles={styles.dropdownStyles}
+            searchPlaceholder="Select a color..."
+          />
+          <FlatList
+            style={styles.categoryList}
+            data={categories}
+            keyExtractor={(category) => category.id}
+            renderItem={({ item }) => (
+              <View
+                style={[
+                  styles.categoryWrapper,
+                  { backgroundColor: frappe[item.color] },
+                ]}
+              >
+                <Text style={styles.categoryText}>{item.name}</Text>
+                <Pressable
+                  style={styles.removeCategory}
+                  onPressOut={() => removeCategory(item.id)}
+                >
+                  <AntDesign name="close" size={16} color={frappe.surface0} />
+                </Pressable>
+              </View>
+            )}
+          />
+          <Pressable
+            style={styles.addCategoryButton}
+            onPressOut={() => handleAddCategory(categoryInput)}
+          >
+            <Text style={styles.addCategoryButtonText}>Add category</Text>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+      <Toast />
+    </Modal>
   );
 }
 

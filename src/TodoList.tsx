@@ -1,20 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import {
-  FlatList,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import 'react-native-get-random-values';
 import { v4 as uuid } from 'uuid';
-import Todo, { type TodoItem } from './Todo';
+import { MaterialIcons, AntDesign, Entypo } from '@expo/vector-icons';
 import { frappe } from './catppuccin';
+import Todo, { type TodoItem } from './Todo';
 import AddTodoModal from './AddTodoModal';
+import CostModal from './CostModal';
 import ManageCategoriesModal, { type Category } from './ManageCategoriesModal';
-import Toast from 'react-native-toast-message';
-import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 async function saveToStorage(todos: TodoItem[], categories: Category[]) {
@@ -40,12 +33,12 @@ export default function TodoList() {
     useState<boolean>(false);
   const [manageCategoriesModalVisible, setManageCategoriesModalVisible] =
     useState<boolean>(false);
+  const [costModalVisible, setCostModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
     loadFromStorage().then((loaded) => {
       const [loadedTodos, loadedCategories] = loaded;
       setTodos(loadedTodos);
-      console.log(loadedCategories);
       setCategories(loadedCategories);
     });
   }, []);
@@ -106,9 +99,7 @@ export default function TodoList() {
     const currentIndex = categories.findIndex(
       (category) => item.category.id === category.id
     );
-
     let firstItemOfCategory = false;
-
     if (currentIndex === 0) {
       firstItemOfCategory = true;
     } else if (
@@ -117,7 +108,6 @@ export default function TodoList() {
     ) {
       firstItemOfCategory = true;
     }
-
     const components = (
       <>
         {currentCategoryId !== item.category.id || firstItemOfCategory ? (
@@ -142,7 +132,6 @@ export default function TodoList() {
         />
       </>
     );
-
     if (currentCategoryId !== item.category.id) {
       currentCategoryId = item.category.id;
     }
@@ -175,33 +164,20 @@ export default function TodoList() {
 
   return (
     <View style={styles.container}>
-      <Modal
-        animationType="slide"
-        transparent={false}
+      <AddTodoModal
+        addTodo={createTodo}
+        categories={categories}
         visible={addTodoModalVisible}
-        onRequestClose={() => setAddTodoModalVisible(false)}
-      >
-        <AddTodoModal
-          addTodo={createTodo}
-          closeModal={() => setAddTodoModalVisible(false)}
-          categories={categories}
-        />
-        <Toast />
-      </Modal>
-      <Modal
-        animationType="slide"
-        transparent={false}
+        setVisible={setAddTodoModalVisible}
+      />
+      <ManageCategoriesModal
+        categories={categories}
+        addCategory={addCategory}
+        removeCategory={removeCategory}
         visible={manageCategoriesModalVisible}
-        onRequestClose={() => setManageCategoriesModalVisible(false)}
-      >
-        <ManageCategoriesModal
-          closeModal={() => setManageCategoriesModalVisible(false)}
-          categories={categories}
-          addCategory={addCategory}
-          removeCategory={removeCategory}
-        />
-        <Toast />
-      </Modal>
+        setVisible={setManageCategoriesModalVisible}
+      />
+      <CostModal visible={costModalVisible} setVisible={setCostModalVisible} />
       <View style={styles.header}>
         <Text style={styles.text}>Hello Vitor.</Text>
         <View style={styles.buttonGroup}>
@@ -214,17 +190,12 @@ export default function TodoList() {
             <AntDesign name="tago" size={20} color={frappe.base} />
           </Pressable>
           <Pressable
-            style={styles.button}
+            style={[styles.button]}
             onPressOut={() => {
-              setAddTodoModalVisible(true);
+              setCostModalVisible(true);
             }}
           >
-            <MaterialIcons
-              style={styles.icon}
-              name="playlist-add"
-              size={20}
-              color={frappe.base}
-            />
+            <Entypo name="time-slot" size={18} color={frappe.base} />
           </Pressable>
         </View>
       </View>
@@ -234,15 +205,25 @@ export default function TodoList() {
         keyExtractor={(item) => item.id}
         renderItem={renderTodo}
       />
+      <Pressable
+        style={[styles.button, styles.addTodoButton]}
+        onPressOut={() => {
+          setAddTodoModalVisible(true);
+        }}
+      >
+        <MaterialIcons
+          style={styles.icon}
+          name="playlist-add"
+          size={20}
+          color={frappe.base}
+        />
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderColor: frappe.base,
-    borderWidth: 1,
-    borderStyle: 'solid',
     width: '90%',
     height: '100%',
     marginBottom: 10,
@@ -296,5 +277,10 @@ const styles = StyleSheet.create({
   },
   firstCategory: {
     marginTop: 0,
+  },
+  addTodoButton: {
+    position: 'absolute',
+    bottom: 50,
+    right: 10,
   },
 });

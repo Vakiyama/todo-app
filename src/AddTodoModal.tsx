@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView,
   Pressable,
   View,
+  Modal,
 } from 'react-native';
 import { SelectList } from 'react-native-dropdown-select-list';
 import Toast from 'react-native-toast-message';
@@ -15,12 +16,14 @@ import { type Category } from './ManageCategoriesModal';
 
 export default function AddTodoModal({
   addTodo,
-  closeModal,
+  visible,
   categories,
+  setVisible,
 }: {
   addTodo: (description: string, category: Category, cost: number) => void;
-  closeModal: () => void;
   categories: Category[];
+  visible: boolean;
+  setVisible: (visible: boolean) => void;
 }) {
   const [descriptionInput, setDescriptionInput] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | void>();
@@ -68,43 +71,54 @@ export default function AddTodoModal({
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container}>
-      <Pressable style={styles.closeButton} onPressOut={closeModal}>
-        <AntDesign name="back" size={18} color={frappe.base} />
-      </Pressable>
-      <View style={styles.viewWrapper}>
-        <Text style={styles.title}>What would you like to add?</Text>
-        <TextInput
-          placeholder="Add a title..."
-          value={descriptionInput}
-          onChangeText={setDescriptionInput}
-          style={styles.input}
-          cursorColor={frappe.crust}
-        />
-        <TextInput
-          placeholder="Add a cost..."
-          value={costInput}
-          onChangeText={setCostInput}
-          style={[styles.input, styles.costInput]}
-          cursorColor={frappe.crust}
-        />
-        <SelectList
-          setSelected={(category: string) => {
-            const found = categories.find((item) => item.name === category);
-            setSelectedCategoryId(found!.id);
-          }}
-          data={categoriesFormatted}
-          maxHeight={160}
-          save="value"
-          boxStyles={styles.categoryBox}
-          dropdownStyles={styles.dropdownStyles}
-          searchPlaceholder="Select a category..."
-        />
-        <Pressable style={styles.addTodoButton} onPressOut={handleTodo}>
-          <Text style={styles.addTodoButtonText}>Add Todo</Text>
+    <Modal
+      animationType="slide"
+      transparent={false}
+      visible={visible}
+      onRequestClose={() => setVisible(false)}
+    >
+      <KeyboardAvoidingView style={styles.container}>
+        <Pressable
+          style={styles.closeButton}
+          onPressOut={() => setVisible(false)}
+        >
+          <AntDesign name="back" size={18} color={frappe.base} />
         </Pressable>
-      </View>
-    </KeyboardAvoidingView>
+        <View style={styles.viewWrapper}>
+          <Text style={styles.title}>What would you like to add?</Text>
+          <TextInput
+            placeholder="Add a title..."
+            value={descriptionInput}
+            onChangeText={setDescriptionInput}
+            style={styles.input}
+            cursorColor={frappe.crust}
+          />
+          <TextInput
+            placeholder="Add a cost..."
+            value={costInput}
+            onChangeText={setCostInput}
+            style={[styles.input, styles.costInput]}
+            cursorColor={frappe.crust}
+          />
+          <SelectList
+            setSelected={(category: string) => {
+              const found = categories.find((item) => item.name === category);
+              setSelectedCategoryId(found!.id);
+            }}
+            data={categoriesFormatted}
+            maxHeight={160}
+            save="value"
+            boxStyles={styles.categoryBox}
+            dropdownStyles={styles.dropdownStyles}
+            searchPlaceholder="Select a category..."
+          />
+          <Pressable style={styles.addTodoButton} onPressOut={handleTodo}>
+            <Text style={styles.addTodoButtonText}>Add Todo</Text>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+      <Toast />
+    </Modal>
   );
 }
 
